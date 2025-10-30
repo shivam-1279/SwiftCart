@@ -1,0 +1,21 @@
+/* App-wide styles */
+.main-content {
+  /* Remove min-height: 80vh to eliminate extra space */
+}
+
+/* Navbar customizations */
+.navbar {
+  transition: all 0.3s ease;
+}
+
+/* Footer styling */
+footer {
+  background-color: #45526e;
+  color: white;
+}
+
+/* Card hover effect */
+.card:hover {
+  transform: translateY(-5px);
+  transition: 0.3s;
+}
