@@ -10,27 +10,31 @@ const api = axios.create({
 });
 
 // ✅ Automatically attach token to every request
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("access");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        const expiryDate = decoded.exp;
-        const currentTime = Date.now() / 1000;
-
-        if (expiryDate > currentTime) {
-          config.headers.Authorization = `Bearer ${token}`;
-        } else {
-          console.warn("Access token expired");
+// In your api.js - Add this response interceptor
+api.interceptors.response.use(
+  (response) => {
+    if (response.data && typeof response.data === 'object') {
+      const fixImageUrls = (obj) => {
+        if (obj && typeof obj === 'object') {
+          if (Array.isArray(obj)) {
+            obj.forEach(fixImageUrls);
+          } else {
+            for (let key in obj) {
+              if (key === 'image' && obj[key] && typeof obj[key] === 'string') {
+                // Fix the image URL in response
+                if (!obj[key].startsWith('http') && obj[key].includes('/img/')) {
+                  obj[key] = `${BASE_URL}/static${obj[key]}`;
+                }
+              } else if (typeof obj[key] === 'object') {
+                fixImageUrls(obj[key]);
+              }
+            }
+          }
         }
-      } catch (err) {
-        console.error("Error decoding token:", err);
-      }
+      };
+      fixImageUrls(response.data);
     }
-    return config;
+    return response;
   },
   (error) => Promise.reject(error)
 );
-
-export default api;
