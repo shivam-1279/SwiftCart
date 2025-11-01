@@ -19,40 +19,25 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ FIXED: Response interceptor that works with your existing components
+// ✅ ULTRA-SIMPLE: Only fix image URLs in the exact format you need
 api.interceptors.response.use(
   (response) => {
-    // Only process if we have data
     if (response.data && typeof response.data === 'object') {
-      const processData = (data) => {
-        if (Array.isArray(data)) {
-          return data.map(item => processData(item));
-        } else if (data && typeof data === 'object') {
-          const processed = { ...data };
-          
-          for (const key in processed) {
-            if (processed.hasOwnProperty(key)) {
-              // Handle image fields
-              if (key === 'image' && typeof processed[key] === 'string') {
-                const imageUrl = processed[key];
-                
-                // Only process relative paths starting with /
-                if (imageUrl && imageUrl.startsWith('/') && !imageUrl.startsWith('http')) {
-                  // ✅ FIX: Simple and safe URL construction
-                  processed[key] = `${BASE_URL}${imageUrl}`;
-                }
-                // If it's already a full URL, leave it as is
-              } else if (typeof processed[key] === 'object' && processed[key] !== null) {
-                processed[key] = processData(processed[key]);
-              }
-            }
-          }
-          return processed;
+      const fixImages = (obj) => {
+        if (Array.isArray(obj)) {
+          return obj.map(fixImages);
         }
-        return data;
+        if (obj && typeof obj === 'object') {
+          const newObj = { ...obj };
+          if (newObj.image && typeof newObj.image === 'string' && newObj.image.startsWith('/media/')) {
+            newObj.image = BASE_URL + newObj.image;
+          }
+          return newObj;
+        }
+        return obj;
       };
-
-      response.data = processData(response.data);
+      
+      response.data = fixImages(response.data);
     }
     return response;
   },
