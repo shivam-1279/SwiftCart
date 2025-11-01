@@ -1,13 +1,18 @@
 import React from 'react';
 
 const OrderSummary = ({ cartItems = [], cartCode, taxPercent = 8 }) => {
+  // Ensure proper number conversion
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + ((item.price ?? item.product?.price ?? 0) * (item.quantity ?? 0)),
+    (sum, item) => {
+      const price = parseFloat(item.price ?? item.product?.price ?? 0);
+      const quantity = parseInt(item.quantity ?? 0);
+      return sum + (price * quantity);
+    },
     0
   );
 
-  const numItems = cartItems.reduce((sum, item) => sum + (item.quantity ?? 0), 0);
-  const tax = (subtotal * taxPercent) / 100;
+  const numItems = cartItems.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
+  const tax = (subtotal * parseFloat(taxPercent)) / 100;
   const total = subtotal + tax;
 
   return (

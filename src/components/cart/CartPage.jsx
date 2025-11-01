@@ -24,10 +24,17 @@ const CartPage = () => {
     </div>
   );
 
+  // Ensure proper number conversion
   const cartTotal = cart.items.reduce(
-    (sum, item) => sum + item.quantity * item.product.price,
+    (sum, item) => {
+      const price = parseFloat(item.product?.price || 0);
+      const quantity = parseInt(item.quantity || 0);
+      return sum + (price * quantity);
+    },
     0
   );
+
+  const numItems = cart.items.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
 
   return (
     <div className="container my-5">
@@ -36,7 +43,7 @@ const CartPage = () => {
         Your Shopping Cart
         {cart?.items?.length > 0 && (
           <span className="badge bg-primary">
-            {cart.items.reduce((sum, item) => sum + item.quantity, 0)} items
+            {numItems} items
           </span>
         )}
       </h4>
@@ -56,7 +63,7 @@ const CartPage = () => {
         <div className="col-lg-4">
           <CartSummary
             cartTotal={cartTotal}
-            numItems={cart.items.reduce((sum, item) => sum + item.quantity, 0)}
+            numItems={numItems}
             cartCode={cart.cart_code}
           />
         </div>

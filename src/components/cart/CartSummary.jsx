@@ -2,8 +2,8 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 const CartSummary = ({ cartTotal, numItems, cartCode }) => {
-  // Calculate values based on cart data
-  const subtotal = cartTotal || 0
+  // Ensure numbers are properly converted
+  const subtotal = parseFloat(cartTotal) || 0
   const shipping = subtotal > 50 ? 0 : 5.99
   const tax = subtotal * 0.08 // 8% tax
   const finalTotal = subtotal + shipping + tax
@@ -68,7 +68,7 @@ const CartSummary = ({ cartTotal, numItems, cartCode }) => {
             className="btn btn-primary w-100 mb-2" 
             disabled={!numItems || numItems === 0}
           >
-            <i className="bi bi-lock-fill me-2" ></i>
+            <i className="bi bi-lock-fill me-2"></i>
             Proceed to Checkout
           </button>
         </Link>
