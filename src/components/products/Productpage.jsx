@@ -18,21 +18,18 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
     const cart_code = localStorage.getItem("cart_code");
 
     // Check if product is in cart (ignore errors)
-// Temporary test - add this to your Productpage.jsx
-useEffect(() => {
-    if (product.image) {
-        const testUrl = getImageUrl(product.image);
-        console.log('🧪 TESTING IMAGE URL:');
-        console.log('   Original:', product.image);
-        console.log('   Processed:', testUrl);
-        
-        // Test if image loads
-        const img = new Image();
-        img.onload = () => console.log('✅ IMAGE LOADS SUCCESSFULLY');
-        img.onerror = () => console.log('❌ IMAGE FAILED TO LOAD');
-        img.src = testUrl;
-    }
-}, [product.image]);
+    useEffect(() => {
+        if (product.id && cart_code) {
+            api.get(`product_in_cart/?cart_code=${cart_code}&product_id=${product.id}`)
+                .then(res => {
+                    setIncart(res.data.product_in_cart);
+                })
+                .catch(err => {
+                    // Ignore cart errors for now
+                });
+        }
+    }, [cart_code, product.id]);
+
     function add_item() {
         if (!cart_code) {
             toast.error("Please refresh the page to initialize cart");
