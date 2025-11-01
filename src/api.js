@@ -5,7 +5,7 @@ export const BASE_URL = "https://backend-production-9172b.up.railway.app";
 export const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
 
 export const getImageUrl = (imagePath) => {
-  console.log('🖼️ Processing image path:', imagePath);
+  console.log('🖼️ Original image path:', imagePath);
   
   if (!imagePath || imagePath === 'null' || imagePath === 'undefined') {
     return PLACEHOLDER_IMAGE;
@@ -16,22 +16,20 @@ export const getImageUrl = (imagePath) => {
     return imagePath;
   }
 
-  // Try multiple possible locations
-  const attempts = [
-    `${BASE_URL}${imagePath}`, // Original path from API
-    `${BASE_URL}/static${imagePath}`, // With /static added
-    `${BASE_URL}/static/img/${imagePath.split('/').pop()}`, // Just filename in static/img
-    `${BASE_URL}/media${imagePath}`, // With /media added
-    `${BASE_URL}/media/img/${imagePath.split('/').pop()}`, // Just filename in media/img
-  ];
-
-  // Test each URL
-  for (let attempt of attempts) {
-    console.log('🔍 Testing URL:', attempt);
+  // FIX: Replace /media/img/ with /static/img/
+  if (imagePath.startsWith('/media/img/')) {
+    const fixedPath = imagePath.replace('/media/img/', '/static/img/');
+    const finalUrl = `${BASE_URL}${fixedPath}`;
+    console.log('✅ Fixed URL:', finalUrl);
+    return finalUrl;
   }
 
-  // Return the most likely one
-  return attempts[0];
+  // For any other path starting with /
+  if (imagePath.startsWith('/')) {
+    return `${BASE_URL}${imagePath}`;
+  }
+
+  return PLACEHOLDER_IMAGE;
 };
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
