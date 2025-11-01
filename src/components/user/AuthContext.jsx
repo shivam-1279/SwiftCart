@@ -1,4 +1,3 @@
-// AuthContext.jsx - UPDATED
 import React, { createContext, useState, useEffect } from "react";
 import api from "../../api";
 
@@ -9,7 +8,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on app start
   useEffect(() => {
     const token = localStorage.getItem("access");
     if (token) {
@@ -26,9 +24,8 @@ export const AuthProvider = ({ children }) => {
       setUser(res.data);
       setIsLoggedIn(true);
     } catch (error) {
-      console.error('Failed to fetch user profile:', error);
-      // Token might be expired, try to refresh
-      await refreshToken();
+      console.error('Failed to fetch user profile');
+      logout();
     } finally {
       setLoading(false);
     }
@@ -39,16 +36,15 @@ export const AuthProvider = ({ children }) => {
       const refresh = localStorage.getItem("refresh");
       if (!refresh) {
         logout();
-        return;
+        return null;
       }
 
       const res = await api.post("token/refresh/", { refresh });
       localStorage.setItem("access", res.data.access);
-      // Retry the original request
-      await fetchUserProfile();
+      return res.data.access;
     } catch (error) {
-      console.error('Token refresh failed:', error);
       logout();
+      return null;
     }
   };
 

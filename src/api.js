@@ -1,4 +1,3 @@
-// api.js - SIMPLIFIED VERSION
 import axios from "axios";
 
 export const BASE_URL = "https://backend-production-9172b.up.railway.app";
@@ -30,7 +29,6 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Only attach token, no refresh logic here
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access');

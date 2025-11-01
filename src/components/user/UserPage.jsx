@@ -1,42 +1,34 @@
-// UserPage.jsx - UPDATED
-import React, { useEffect, useState, useContext } from "react";
-import api from "../../api";
+import React, { useState, useContext } from "react";
 import UserInfo from "./UserInfo";
 import OrderHistory from "./OrderHistory";
 import { AuthContext } from "./AuthContext";
 
 const UserPage = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { user, loading, isLoggedIn } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState("profile");
-  const { isLoggedIn } = useContext(AuthContext);
 
-  useEffect(() => {
-    // Only fetch if user is logged in
-    if (isLoggedIn) {
-      fetchUser();
-    } else {
-      setLoading(false);
-    }
-  }, [isLoggedIn]);
+  if (loading) {
+    return (
+      <div className="container my-5 pt-5 text-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-2">Loading user information...</p>
+      </div>
+    );
+  }
 
-  const fetchUser = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/user_items/");
-      setUser(res.data);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load user info. Please try logging in again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) return <div className="text-center mt-5">Loading...</div>;
-  if (error) return <div className="text-danger text-center mt-5">{error}</div>;
-  if (!isLoggedIn) return <div className="text-center mt-5">Please log in to view your profile.</div>;
+  if (!isLoggedIn) {
+    return (
+      <div className="container my-5 pt-5">
+        <div className="alert alert-warning text-center">
+          <h4>Please Log In</h4>
+          <p>You need to be logged in to view this page.</p>
+          <a href="/login" className="btn btn-primary">Login</a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container my-5 pt-5">
