@@ -19,7 +19,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ FIXED: Response interceptor with proper image URL handling
+// ✅ FIXED: Response interceptor that works with your existing components
 api.interceptors.response.use(
   (response) => {
     // Only process if we have data
@@ -36,22 +36,12 @@ api.interceptors.response.use(
               if (key === 'image' && typeof processed[key] === 'string') {
                 const imageUrl = processed[key];
                 
-                // Only fix if it's a relative path starting with /media/ or /static/
+                // Only process relative paths starting with /
                 if (imageUrl && imageUrl.startsWith('/') && !imageUrl.startsWith('http')) {
-                  // ✅ FIX: Check if URL already contains base URL (avoid duplication)
-                  const baseUrlWithProtocol = BASE_URL.startsWith('http') ? BASE_URL : `https://${BASE_URL}`;
-                  
-                  // Remove any protocol variations that might cause duplication
-                  let cleanUrl = imageUrl;
-                  if (imageUrl.includes('backend-production-9172b.up.railway.app')) {
-                    // Extract just the path part if domain is already included
-                    const urlObj = new URL(imageUrl.includes('://') ? imageUrl : `https://${imageUrl}`);
-                    cleanUrl = urlObj.pathname;
-                  }
-                  
-                  // ✅ FIX: Construct proper URL with protocol
-                  processed[key] = `${baseUrlWithProtocol}${cleanUrl}`;
+                  // ✅ FIX: Simple and safe URL construction
+                  processed[key] = `${BASE_URL}${imageUrl}`;
                 }
+                // If it's already a full URL, leave it as is
               } else if (typeof processed[key] === 'object' && processed[key] !== null) {
                 processed[key] = processData(processed[key]);
               }
