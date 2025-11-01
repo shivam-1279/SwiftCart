@@ -64,13 +64,13 @@ const CartSummary = ({ cartTotal, numItems, cartCode }) => {
 
         {/* Buttons */}
         <Link to="/checkout">
-        <button 
-          className="btn btn-primary w-100 mb-2" 
-          disabled={!numItems || numItems === 0}
-        >
-          <i className="bi bi-lock-fill me-2" ></i>
-          Proceed to Checkout
-        </button>
+          <button 
+            className="btn btn-primary w-100 mb-2" 
+            disabled={!numItems || numItems === 0}
+          >
+            <i className="bi bi-lock-fill me-2" ></i>
+            Proceed to Checkout
+          </button>
         </Link>
         <Link to="/" className="btn btn-outline-secondary w-100">
           <i className="bi bi-arrow-left me-2"></i>

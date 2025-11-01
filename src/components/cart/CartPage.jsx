@@ -58,7 +58,6 @@ const CartPage = () => {
             cartTotal={cartTotal}
             numItems={cart.items.reduce((sum, item) => sum + item.quantity, 0)}
             cartCode={cart.cart_code}
-            tax={tax}
           />
         </div>
       </div>

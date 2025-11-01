@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BASE_URL } from '../../api';
+import { BASE_URL, PLACEHOLDER_IMAGE } from '../../api';
 
 const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
   const [quantity, setQuantity] = useState(item.quantity);
@@ -24,6 +24,9 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
               className="card-img rounded-start-4 h-100"
               alt={item.product.name}
               style={{ objectFit: 'cover', minHeight: '200px' }}
+              onError={(e) => {
+                e.target.src = PLACEHOLDER_IMAGE;
+              }}
             />
           </div>
 

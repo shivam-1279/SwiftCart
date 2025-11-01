@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import ProductpagePlaceholder from './ProductpagePlaceholder';
 import RelatedProducts from './RelatedProducts';
 import { useParams } from 'react-router-dom';
-import { BASE_URL } from "../../api";
+import { BASE_URL, PLACEHOLDER_IMAGE } from "../../api";
 import api from '../../api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -63,8 +63,7 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
         setLoading(true);
         api.get(`product_detail/${slug}/`)
             .then(res => {
-                console.log('Product data:', res.data); // Debug log
-                console.log('Product image URL:', res.data.image); // Debug log
+                console.log('Product data:', res.data);
                 setProduct(res.data);
                 setSimilarProducts(res.data.similar_products || []);
                 setLoading(false);
@@ -91,15 +90,13 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                     <div className="row gx-4 gx-lg-5 align-items-center">
                         <div className="col-md-6">
                             <img
-                                className="card-img-top mb-5 mb-md-0"
-                                // ✅ FIXED: Remove BASE_URL prefix since interceptor already adds it
-                                src={product.image || '/placeholder-image.jpg'}
+                                className="card-img-top mb-5 mb-md-0 rounded"
+                                src={product.image ? `${BASE_URL}${product.image}` : PLACEHOLDER_IMAGE}
                                 alt={product.name}
                                 onError={(e) => { 
-                                    console.log('Image failed to load:', product.image);
-                                    e.target.src = '/placeholder-image.jpg'; 
+                                    e.target.src = PLACEHOLDER_IMAGE;
                                 }}
-                                onLoad={(e) => console.log('Image loaded successfully:', product.image)}
+                                style={{ maxHeight: '500px', objectFit: 'contain' }}
                             />
                         </div>
                         <div className="col-md-6">
@@ -110,6 +107,14 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                             </div>
                             <p className="lead">{product.description}</p>
                             <div className="d-flex">
+                                <input
+                                    type="number"
+                                    className="form-control me-3"
+                                    value={quantity}
+                                    onChange={handleQuantityChange}
+                                    style={{ width: '80px' }}
+                                    min="1"
+                                />
                                 <button
                                     className="btn btn-outline-dark flex-shrink-0"
                                     type='button'   
