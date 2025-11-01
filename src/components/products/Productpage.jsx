@@ -14,7 +14,19 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
     const [loading, setLoading] = useState(false);
     const [inCart, setIncart] = useState(false);
     const [quantity, setQuantity] = useState(1);
-    const cart_code = localStorage.getItem("cart_code");
+    const [imageError, setImageError] = useState(false);
+    
+    // Get cart code with fallback
+    const getCartCode = () => {
+        let cartCode = localStorage.getItem("cart_code");
+        if (!cartCode) {
+            cartCode = 'default_cart'; // Fallback cart code
+            localStorage.setItem("cart_code", cartCode);
+        }
+        return cartCode;
+    };
+
+    const cart_code = getCartCode();
 
     // Check if product is in cart
     useEffect(() => {
@@ -25,6 +37,7 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                 })
                 .catch(err => {
                     console.log("Error checking cart:", err.message);
+                    // Don't show error for cart checks
                 });
         }
     }, [cart_code, product.id]);
@@ -61,17 +74,21 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
         if (!slug) return;
         
         setLoading(true);
+        setImageError(false);
+        
         api.get(`product_detail/${slug}/`)
             .then(res => {
-                console.log('Product data:', res.data);
-                console.log('Product image URL:', res.data.image);
-                console.log('Processed image URL:', getImageUrl(res.data.image));
+                console.log('✅ Product data received:', res.data);
+                console.log('🖼️ Raw image path:', res.data.image);
+                console.log('🔗 Processed image URL:', getImageUrl(res.data.image));
+                
                 setProduct(res.data);
                 setSimilarProducts(res.data.similar_products || []);
                 setLoading(false);
             })
             .catch(err => {
-                console.log("Error fetching product:", err.message);
+                console.log("❌ Error fetching product:", err.message);
+                toast.error("Failed to load product details");
                 setLoading(false);
             });
     }, [slug]);
@@ -79,6 +96,12 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
     const handleQuantityChange = (e) => {
         const value = parseInt(e.target.value);
         if (value > 0) setQuantity(value);
+    };
+
+    const handleImageError = (e) => {
+        console.log('❌ Image failed to load:', e.target.src);
+        setImageError(true);
+        e.target.src = PLACEHOLDER_IMAGE;
     };
 
     if (loading) return <ProductpagePlaceholder />;
@@ -93,12 +116,9 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                         <div className="col-md-6">
                             <img
                                 className="card-img-top mb-5 mb-md-0 rounded"
-                                src={getImageUrl(product.image)}
+                                src={imageError ? PLACEHOLDER_IMAGE : getImageUrl(product.image)}
                                 alt={product.name}
-                                onError={(e) => { 
-                                    console.log('Image failed to load, using placeholder');
-                                    e.target.src = PLACEHOLDER_IMAGE;
-                                }}
+                                onError={handleImageError}
                                 style={{ 
                                     maxHeight: '500px', 
                                     objectFit: 'contain', 
@@ -106,6 +126,11 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                                     backgroundColor: '#f8f9fa'
                                 }}
                             />
+                            {imageError && (
+                                <div className="text-center text-muted small mt-2">
+                                    Image not available
+                                </div>
+                            )}
                         </div>
                         <div className="col-md-6">
                             <div className="small mb-1">SKU: {product.slug}</div>
