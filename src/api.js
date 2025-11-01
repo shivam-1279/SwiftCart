@@ -6,39 +6,25 @@ export const BASE_URL = import.meta.env.VITE_API_URL || "https://backend-product
 export const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
 
 // **FIXED: Proper image URL construction**
+// api.js - UPDATE getImageUrl function
 export const getImageUrl = (imagePath) => {
-  console.log('Original image path:', imagePath); // Debug log
+  console.log('Original image path:', imagePath);
   
   if (!imagePath || imagePath === 'null' || imagePath === 'undefined') {
     return PLACEHOLDER_IMAGE;
   }
   
-  // If it's already a full URL (starts with http), return as is
+  // If it's already a full URL, return as is
   if (imagePath.startsWith('http')) {
     return imagePath;
   }
   
-  // If it starts with double slash or malformed, fix it
-  if (imagePath.includes('https//') || imagePath.includes('http//')) {
-    // Fix malformed URLs
-    const fixedPath = imagePath.replace('https//', 'https://').replace('http//', 'http://');
-    return fixedPath;
-  }
+  // Remove leading slash if present
+  const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
   
-  // If it starts with /static/, it's from the backend static files
-  if (imagePath.startsWith('/static/')) {
-    return `${BASE_URL}${imagePath}`;
-  }
-  
-  // If it doesn't start with /, add it
-  if (!imagePath.startsWith('/')) {
-    return `${BASE_URL}/${imagePath}`;
-  }
-  
-  // Default case
-  return `${BASE_URL}${imagePath}`;
+  // Construct URL using the API media endpoint
+  return `${BASE_URL}/api/media/${cleanPath}`;
 };
-
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
   timeout: 10000,
