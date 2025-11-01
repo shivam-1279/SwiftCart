@@ -17,31 +17,33 @@ const Homepage = () => {
     }
   }, []);
 
-  useEffect(() => {
-    setLoading(true);
-    api
-      .get("/products/")
-      .then((res) => {
-        // **FIX: Debug code should be here, not in the dependency array**
-        console.log('=== 🎯 API DEBUG - IMAGE PATHS ===');
-        res.data.forEach((product, index) => {
-          console.log(`📦 Product ${index + 1}: ${product.name}`);
-          console.log('   Raw image field:', product.image);
-          console.log('   Raw image_url field:', product.image_url);
-          console.log('   Type of image:', typeof product.image);
-          console.log('   Type of image_url:', typeof product.image_url);
-        });
-        console.log('=== END DEBUG ===');
-
-        setProducts(res.data);
-        setLoading(false);  
-        setError("");
-      })
-      .catch((err) => {
-        setError("Error loading products");
-        setLoading(false);
+  // In your homepage.jsx - ADD DEBUG
+useEffect(() => {
+  setLoading(true);
+  api
+    .get("/products/")
+    .then((res) => {
+      console.log('=== 🎯 API RESPONSE DEBUG ===');
+      res.data.forEach((product, index) => {
+        console.log(`📦 Product ${index + 1}: ${product.name}`);
+        console.log('   Raw image field:', product.image);
+        console.log('   Raw image_url field:', product.image_url);
+        
+        // Test what getImageUrl will return
+        const testUrl = getImageUrl(product.image_url || product.image);
+        console.log('   Final URL:', testUrl);
       });
-  }, []); // **FIX: Remove [products] to avoid infinite loop**
+      console.log('=== END DEBUG ===');
+
+      setProducts(res.data);
+      setLoading(false);  
+      setError("");
+    })
+    .catch((err) => {
+      setError("Error loading products");
+      setLoading(false);
+    });
+}, []); // **FIX: Remove [products] to avoid infinite loop**
 
   const handleFilteredResults = (filteredData) => {
     setProducts(filteredData);
