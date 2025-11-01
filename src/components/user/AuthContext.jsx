@@ -1,3 +1,4 @@
+// AuthContext.jsx - UPDATED
 import React, { createContext, useState, useEffect } from "react";
 import api from "../../api";
 
@@ -6,15 +7,16 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Check if user is logged in on app start
   useEffect(() => {
     const token = localStorage.getItem("access");
     if (token) {
-      // Verify token is still valid by fetching user data
       fetchUserProfile();
     } else {
       setIsLoggedIn(false);
+      setLoading(false);
     }
   }, []);
 
@@ -24,8 +26,11 @@ export const AuthProvider = ({ children }) => {
       setUser(res.data);
       setIsLoggedIn(true);
     } catch (error) {
+      console.error('Failed to fetch user profile:', error);
       // Token might be expired, try to refresh
       await refreshToken();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,8 +44,10 @@ export const AuthProvider = ({ children }) => {
 
       const res = await api.post("token/refresh/", { refresh });
       localStorage.setItem("access", res.data.access);
+      // Retry the original request
       await fetchUserProfile();
     } catch (error) {
+      console.error('Token refresh failed:', error);
       logout();
     }
   };
@@ -60,7 +67,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, refreshToken }}>
+    <AuthContext.Provider value={{ 
+      isLoggedIn, 
+      user, 
+      login, 
+      logout, 
+      refreshToken,
+      loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );

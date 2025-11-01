@@ -58,14 +58,12 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
         setLoading(true);
         api.get(`product_detail/${slug}/`)
             .then(res => {
-                console.log('✅ Product data:', res.data);
                 setProduct(res.data);
                 setSimilarProducts(res.data.similar_products || []);
 
                 // Set image URL immediately
                 if (res.data.image) {
                     const imageUrl = getImageUrl(res.data.image);
-                    console.log('🖼️ Setting image URL:', imageUrl);
                     setCurrentImage(imageUrl);
                 }
 
@@ -83,7 +81,6 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
     };
 
     const handleImageError = (e) => {
-        console.log('❌ Image failed to load, using placeholder');
         setCurrentImage(PLACEHOLDER_IMAGE);
     };
 
@@ -102,11 +99,9 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                                 src={getImageUrl(product.image) + '?t=' + Date.now()}
                                 alt={product.name}
                                 onError={(e) => {
-                                    console.log('❌ Image failed:', e.target.src);
                                     e.target.src = PLACEHOLDER_IMAGE;
                                 }}
                                 onLoad={(e) => {
-                                    console.log('✅ Image loaded successfully:', e.target.src);
                                 }}
                                 style={{
                                     maxHeight: '500px',

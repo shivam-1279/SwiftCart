@@ -23,17 +23,11 @@ useEffect(() => {
   api
     .get("/products/")
     .then((res) => {
-      console.log('=== 🎯 API RESPONSE DEBUG ===');
       res.data.forEach((product, index) => {
-        console.log(`📦 Product ${index + 1}: ${product.name}`);
-        console.log('   Raw image field:', product.image);
-        console.log('   Raw image_url field:', product.image_url);
         
         // Test what getImageUrl will return
         const testUrl = getImageUrl(product.image_url || product.image);
-        console.log('   Final URL:', testUrl);
       });
-      console.log('=== END DEBUG ===');
 
       setProducts(res.data);
       setLoading(false);  
