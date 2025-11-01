@@ -4,8 +4,8 @@ import RelatedProducts from './RelatedProducts';
 import { useParams } from 'react-router-dom';
 import { BASE_URL } from "../../api";
 import api from '../../api';
-import { toast } from 'react-toastify'; // <-- import toast
-import 'react-toastify/dist/ReactToastify.css'; // <-- import styles
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
     const { slug } = useParams();
@@ -43,7 +43,7 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
         
         api.post("add_item/", newItem)
             .then(res => {
-                toast.success("Item added to cart!"); // <-- toast success
+                toast.success("Item added to cart!");
                 setIncart(true);
                 if (fetchCartStats) {
                     fetchCartStats();
@@ -53,7 +53,7 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
             })
             .catch(err => {
                 console.log("Error adding item:", err.message);
-                toast.error("Error adding item to cart"); // <-- toast error
+                toast.error("Error adding item to cart");
             });
     }
 
@@ -63,6 +63,8 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
         setLoading(true);
         api.get(`product_detail/${slug}/`)
             .then(res => {
+                console.log('Product data:', res.data); // Debug log
+                console.log('Product image URL:', res.data.image); // Debug log
                 setProduct(res.data);
                 setSimilarProducts(res.data.similar_products || []);
                 setLoading(false);
@@ -90,9 +92,14 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                         <div className="col-md-6">
                             <img
                                 className="card-img-top mb-5 mb-md-0"
-                                src={product.image ? `${BASE_URL}${product.image}` : '/placeholder-image.jpg'}
+                                // ✅ FIXED: Remove BASE_URL prefix since interceptor already adds it
+                                src={product.image || '/placeholder-image.jpg'}
                                 alt={product.name}
-                                onError={(e) => { e.target.src = '/placeholder-image.jpg' }}
+                                onError={(e) => { 
+                                    console.log('Image failed to load:', product.image);
+                                    e.target.src = '/placeholder-image.jpg'; 
+                                }}
+                                onLoad={(e) => console.log('Image loaded successfully:', product.image)}
                             />
                         </div>
                         <div className="col-md-6">
