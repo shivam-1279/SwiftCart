@@ -1,15 +1,13 @@
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 
-// ✅ Use environment variable if available, else fallback to localhost
-export const BASE_URL =
-  import.meta.env.VITE_API_URL || "https://backend-production-9172b.up.railway.app";
+export const BASE_URL = import.meta.env.VITE_API_URL || "https://backend-production-9172b.up.railway.app";
 
 const api = axios.create({
-  baseURL: `${BASE_URL}/api`, // This will make requests to https://backend-production-9172b.up.railway.app/api/
+  baseURL: `${BASE_URL}/api`,
+  timeout: 10000,
 });
 
-// ✅ Automatically attach token to every request
+// Request interceptor for auth tokens
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
@@ -21,34 +19,42 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ Fix image URLs in response
+// Response interceptor - FIXED image URL handling
 api.interceptors.response.use(
   (response) => {
+    // Fix image URLs safely
     if (response.data && typeof response.data === 'object') {
       const fixImageUrls = (obj) => {
-        if (obj && typeof obj === 'object') {
-          if (Array.isArray(obj)) {
-            obj.forEach(fixImageUrls);
-          } else {
-            for (let key in obj) {
-              if (key === 'image' && obj[key] && typeof obj[key] === 'string') {
-                // Fix the image URL in response
-                if (!obj[key].startsWith('http') && obj[key].includes('/img/')) {
-                  obj[key] = `${BASE_URL}/static${obj[key]}`;
+        if (Array.isArray(obj)) {
+          return obj.map(item => fixImageUrls(item));
+        } else if (obj && typeof obj === 'object') {
+          const newObj = { ...obj };
+          for (let key in newObj) {
+            if (newObj.hasOwnProperty(key)) {
+              if (key === 'image' && typeof newObj[key] === 'string') {
+                // Fix image URL - only if it's a relative path
+                const imageUrl = newObj[key];
+                if (imageUrl && !imageUrl.startsWith('http') && imageUrl.startsWith('/')) {
+                  newObj[key] = `${BASE_URL}${imageUrl}`;
                 }
-              } else if (typeof obj[key] === 'object') {
-                fixImageUrls(obj[key]); // ✅ FIXED: Removed random characters
+              } else if (typeof newObj[key] === 'object') {
+                newObj[key] = fixImageUrls(newObj[key]);
               }
             }
           }
+          return newObj;
         }
+        return obj;
       };
-      fixImageUrls(response.data);
+      
+      response.data = fixImageUrls(response.data);
     }
     return response;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('API Error:', error.response?.data || error.message);
+    return Promise.reject(error);
+  }
 );
 
-// ✅ CRITICAL: Add default export
 export default api;
