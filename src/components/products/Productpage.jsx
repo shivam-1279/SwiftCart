@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom';
 import { getImageUrl, PLACEHOLDER_IMAGE } from "../../api";
 import api from '../../api';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
     const { slug } = useParams();
@@ -14,37 +13,29 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
     const [loading, setLoading] = useState(false);
     const [inCart, setIncart] = useState(false);
     const [quantity, setQuantity] = useState(1);
-    const [imageError, setImageError] = useState(false);
-    
-    // Get cart code with fallback
-    const getCartCode = () => {
-        let cartCode = localStorage.getItem("cart_code");
-        if (!cartCode) {
-            cartCode = 'default_cart'; // Fallback cart code
-            localStorage.setItem("cart_code", cartCode);
-        }
-        return cartCode;
-    };
+    const [currentImage, setCurrentImage] = useState(PLACEHOLDER_IMAGE);
 
-    const cart_code = getCartCode();
+    const cart_code = localStorage.getItem("cart_code");
 
-    // Check if product is in cart
-    useEffect(() => {
-        if (product.id && cart_code) {
-            api.get(`product_in_cart/?cart_code=${cart_code}&product_id=${product.id}`)
-                .then(res => {
-                    setIncart(res.data.product_in_cart);
-                })
-                .catch(err => {
-                    console.log("Error checking cart:", err.message);
-                    // Don't show error for cart checks
-                });
-        }
-    }, [cart_code, product.id]);
-
+    // Check if product is in cart (ignore errors)
+// Temporary test - add this to your Productpage.jsx
+useEffect(() => {
+    if (product.image) {
+        const testUrl = getImageUrl(product.image);
+        console.log('🧪 TESTING IMAGE URL:');
+        console.log('   Original:', product.image);
+        console.log('   Processed:', testUrl);
+        
+        // Test if image loads
+        const img = new Image();
+        img.onload = () => console.log('✅ IMAGE LOADS SUCCESSFULLY');
+        img.onerror = () => console.log('❌ IMAGE FAILED TO LOAD');
+        img.src = testUrl;
+    }
+}, [product.image]);
     function add_item() {
         if (!cart_code) {
-            toast.error("Cart not initialized. Please refresh the page.");
+            toast.error("Please refresh the page to initialize cart");
             return;
         }
 
@@ -58,14 +49,8 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
             .then(res => {
                 toast.success("Item added to cart!");
                 setIncart(true);
-                if (fetchCartStats) {
-                    fetchCartStats();
-                } else if (setNumberCartItems) {
-                    setNumberCartItems(prev => prev + quantity);
-                }
             })
             .catch(err => {
-                console.log("Error adding item:", err.message);
                 toast.error("Error adding item to cart");
             });
     }
@@ -74,21 +59,23 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
         if (!slug) return;
         
         setLoading(true);
-        setImageError(false);
-        
         api.get(`product_detail/${slug}/`)
             .then(res => {
-                console.log('✅ Product data received:', res.data);
-                console.log('🖼️ Raw image path:', res.data.image);
-                console.log('🔗 Processed image URL:', getImageUrl(res.data.image));
-                
+                console.log('✅ Product data:', res.data);
                 setProduct(res.data);
                 setSimilarProducts(res.data.similar_products || []);
+                
+                // Set image URL immediately
+                if (res.data.image) {
+                    const imageUrl = getImageUrl(res.data.image);
+                    console.log('🖼️ Setting image URL:', imageUrl);
+                    setCurrentImage(imageUrl);
+                }
+                
                 setLoading(false);
             })
             .catch(err => {
-                console.log("❌ Error fetching product:", err.message);
-                toast.error("Failed to load product details");
+                console.log("Error fetching product:", err);
                 setLoading(false);
             });
     }, [slug]);
@@ -99,9 +86,8 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
     };
 
     const handleImageError = (e) => {
-        console.log('❌ Image failed to load:', e.target.src);
-        setImageError(true);
-        e.target.src = PLACEHOLDER_IMAGE;
+        console.log('❌ Image failed to load, using placeholder');
+        setCurrentImage(PLACEHOLDER_IMAGE);
     };
 
     if (loading) return <ProductpagePlaceholder />;
@@ -116,7 +102,7 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                         <div className="col-md-6">
                             <img
                                 className="card-img-top mb-5 mb-md-0 rounded"
-                                src={imageError ? PLACEHOLDER_IMAGE : getImageUrl(product.image)}
+                                src={currentImage}
                                 alt={product.name}
                                 onError={handleImageError}
                                 style={{ 
@@ -126,11 +112,6 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                                     backgroundColor: '#f8f9fa'
                                 }}
                             />
-                            {imageError && (
-                                <div className="text-center text-muted small mt-2">
-                                    Image not available
-                                </div>
-                            )}
                         </div>
                         <div className="col-md-6">
                             <div className="small mb-1">SKU: {product.slug}</div>
@@ -155,14 +136,9 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                                     disabled={inCart || !cart_code}
                                 >
                                     <i className="bi-cart-fill me-1"></i>
-                                    {inCart ? "Product in cart" : "Add to Cart"}
+                                    {inCart ? "In Cart" : "Add to Cart"}
                                 </button>
                             </div>
-                            {!cart_code && (
-                                <div className="text-danger mt-2 small">
-                                    Cart not initialized. Please refresh the page.
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
