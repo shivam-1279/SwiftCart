@@ -1,4 +1,4 @@
-// api.js - FIXED VERSION
+// api.js - UPDATED VERSION
 import axios from "axios";
 
 export const BASE_URL = "https://backend-production-9172b.up.railway.app";
@@ -31,9 +31,40 @@ export const getImageUrl = (imagePath) => {
 
   return PLACEHOLDER_IMAGE;
 };
+
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
   timeout: 10000,
 });
+
+// Add request interceptor to include auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor to handle auth errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token is invalid or expired
+      console.log('Authentication error - redirecting to login');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      // You might want to redirect to login page here
+      // window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;
