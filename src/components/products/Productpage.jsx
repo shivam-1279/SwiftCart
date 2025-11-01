@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import ProductpagePlaceholder from './ProductpagePlaceholder';
 import RelatedProducts from './RelatedProducts';
 import { useParams } from 'react-router-dom';
-import { BASE_URL, PLACEHOLDER_IMAGE } from "../../api";
+import { getImageUrl, PLACEHOLDER_IMAGE } from "../../api";
 import api from '../../api';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -47,7 +47,7 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                 setIncart(true);
                 if (fetchCartStats) {
                     fetchCartStats();
-                } else {
+                } else if (setNumberCartItems) {
                     setNumberCartItems(prev => prev + 1);
                 }
             })
@@ -91,12 +91,12 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                         <div className="col-md-6">
                             <img
                                 className="card-img-top mb-5 mb-md-0 rounded"
-                                src={product.image ? `${BASE_URL}${product.image}` : PLACEHOLDER_IMAGE}
+                                src={getImageUrl(product.image)}
                                 alt={product.name}
                                 onError={(e) => { 
                                     e.target.src = PLACEHOLDER_IMAGE;
                                 }}
-                                style={{ maxHeight: '500px', objectFit: 'contain' }}
+                                style={{ maxHeight: '500px', objectFit: 'contain', width: '100%' }}
                             />
                         </div>
                         <div className="col-md-6">
@@ -106,7 +106,7 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                                 <span>${product.price}</span>
                             </div>
                             <p className="lead">{product.description}</p>
-                            <div className="d-flex">
+                            <div className="d-flex align-items-center mb-3">
                                 <input
                                     type="number"
                                     className="form-control me-3"

@@ -5,6 +5,24 @@ export const BASE_URL = import.meta.env.VITE_API_URL || "https://backend-product
 // Add placeholder image data URI
 export const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
 
+// Helper function to build image URLs
+export const getImageUrl = (imagePath) => {
+  if (!imagePath) return PLACEHOLDER_IMAGE;
+  
+  // If imagePath is already a full URL, return it
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+  
+  // If imagePath starts with /, it's already absolute from base
+  if (imagePath.startsWith('/')) {
+    return `${BASE_URL}${imagePath}`;
+  }
+  
+  // Otherwise, construct the full URL
+  return `${BASE_URL}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+};
+
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
   timeout: 10000,
@@ -27,13 +45,11 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      console.log('Authentication failed, clearing tokens');
       // Clear invalid tokens
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
-      // Redirect to login if not already there
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
+      // Don't redirect automatically as it might break guest users
     }
     return Promise.reject(error);
   }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BASE_URL, PLACEHOLDER_IMAGE } from '../../api';
+import { getImageUrl, PLACEHOLDER_IMAGE } from '../../api';
 
 const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
   const [quantity, setQuantity] = useState(item.quantity);
@@ -20,7 +20,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
           {/* Product Image */}
           <div className="col-md-4">
             <img
-              src={`${BASE_URL}${item.product.image}`}
+              src={getImageUrl(item.product.image)}
               className="card-img rounded-start-4 h-100"
               alt={item.product.name}
               style={{ objectFit: 'cover', minHeight: '200px' }}

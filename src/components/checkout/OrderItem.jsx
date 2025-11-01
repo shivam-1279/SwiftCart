@@ -1,12 +1,12 @@
 import React from 'react';
-import { BASE_URL, PLACEHOLDER_IMAGE } from '../../api';
+import { getImageUrl, PLACEHOLDER_IMAGE } from '../../api';
 
 const OrderItem = ({ item, handleUpdateQuantity, handleRemove }) => {
   return (
     <div className="card mb-3 p-3 border-0 border-bottom shadow-sm-sm">
       <div className="d-flex align-items-center">
         <img
-          src={`${BASE_URL}${item.product.image}`}
+          src={getImageUrl(item.product.image)}
           width="70"
           height="70"
           className="rounded me-3"
