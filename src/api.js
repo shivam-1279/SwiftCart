@@ -19,35 +19,45 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - FIXED image URL handling
+// ✅ FIXED: Response interceptor with proper image URL handling
 api.interceptors.response.use(
   (response) => {
-    // Fix image URLs safely
+    // Only process if we have data
     if (response.data && typeof response.data === 'object') {
-      const fixImageUrls = (obj) => {
-        if (Array.isArray(obj)) {
-          return obj.map(item => fixImageUrls(item));
-        } else if (obj && typeof obj === 'object') {
-          const newObj = { ...obj };
-          for (let key in newObj) {
-            if (newObj.hasOwnProperty(key)) {
-              if (key === 'image' && typeof newObj[key] === 'string') {
-                // Fix image URL - only if it's a relative path
-                const imageUrl = newObj[key];
-                if (imageUrl && !imageUrl.startsWith('http') && imageUrl.startsWith('/')) {
-                  newObj[key] = `${BASE_URL}${imageUrl}`;
+      const processData = (data) => {
+        if (Array.isArray(data)) {
+          return data.map(item => processData(item));
+        } else if (data && typeof data === 'object') {
+          const processed = { ...data };
+          
+          for (const key in processed) {
+            if (processed.hasOwnProperty(key)) {
+              // Handle image fields
+              if (key === 'image' && typeof processed[key] === 'string') {
+                const imageUrl = processed[key];
+                
+                // Only fix if it's a relative path starting with /media/ or /static/
+                if (imageUrl && imageUrl.startsWith('/') && !imageUrl.startsWith('http')) {
+                  // Remove any duplicate base URLs that might have been added
+                  let cleanUrl = imageUrl;
+                  if (imageUrl.includes(BASE_URL)) {
+                    cleanUrl = imageUrl.replace(BASE_URL, '');
+                  }
+                  
+                  // Construct proper URL
+                  processed[key] = `${BASE_URL}${cleanUrl}`;
                 }
-              } else if (typeof newObj[key] === 'object') {
-                newObj[key] = fixImageUrls(newObj[key]);
+              } else if (typeof processed[key] === 'object') {
+                processed[key] = processData(processed[key]);
               }
             }
           }
-          return newObj;
+          return processed;
         }
-        return obj;
+        return data;
       };
-      
-      response.data = fixImageUrls(response.data);
+
+      response.data = processData(response.data);
     }
     return response;
   },
