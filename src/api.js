@@ -8,19 +8,21 @@ export const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAw
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return PLACEHOLDER_IMAGE;
   
-  // If already full URL, return as is
+  // If it's already a full URL, return as is
   if (imagePath.startsWith('http')) return imagePath;
   
-  // FIX: Replace /media/ with /static/ in the path
-  let fixedPath = imagePath;
-  if (fixedPath.startsWith('/media/')) {
-    fixedPath = fixedPath.replace('/media/', '/static/');
+  // FIX: Simply change /media/ to /static/
+  if (imagePath.startsWith('/media/')) {
+    return `${BASE_URL}${imagePath.replace('/media/', '/static/')}`;
   }
   
-  // Build final URL
-  return `${BASE_URL}${fixedPath}`;
+  // If path starts with / but not /media/, use as is
+  if (imagePath.startsWith('/')) {
+    return `${BASE_URL}${imagePath}`;
+  }
+  
+  return PLACEHOLDER_IMAGE;
 };
-
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
   timeout: 10000,
