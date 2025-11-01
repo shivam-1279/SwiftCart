@@ -1,26 +1,31 @@
-// api.js - SIMPLE WORKING VERSION
+// api.js - FIXED VERSION
 import axios from "axios";
 
 export const BASE_URL = import.meta.env.VITE_API_URL || "https://backend-production-9172b.up.railway.app";
 
 export const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
 
-// **SIMPLE FIX: Convert any image path to full URL**
+// **FIXED: Handle clean paths from API**
 export const getImageUrl = (imagePath) => {
+  console.log('🔍 getImageUrl called with:', imagePath);
+  
   if (!imagePath || imagePath === 'null' || imagePath === 'undefined') {
     return PLACEHOLDER_IMAGE;
   }
   
-  // If already full URL, return as-is
+  // If it's already a full URL, return as is
   if (imagePath.startsWith('http')) {
     return imagePath;
   }
   
-  // Extract filename (handle both paths and plain filenames)
-  const filename = imagePath.includes('/') ? imagePath.split('/').pop() : imagePath;
+  // **FIX: API now returns paths like "/static/img/filename.avif"**
+  // Just prepend BASE_URL to these clean paths
+  if (imagePath.startsWith('/')) {
+    return `${BASE_URL}${imagePath}`;
+  }
   
-  // Return full static URL
-  return `${BASE_URL}/static/img/${filename}`;
+  // Fallback for any other format
+  return `${BASE_URL}/static/img/${imagePath}`;
 };
 
 const api = axios.create({
