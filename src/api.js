@@ -6,11 +6,22 @@ export const BASE_URL =
   import.meta.env.VITE_API_URL || "https://backend-production-9172b.up.railway.app";
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: `${BASE_URL}/api`, // This will make requests to https://backend-production-9172b.up.railway.app/api/
 });
 
 // ✅ Automatically attach token to every request
-// In your api.js - Add this response interceptor
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// ✅ Fix image URLs in response
 api.interceptors.response.use(
   (response) => {
     if (response.data && typeof response.data === 'object') {
@@ -26,7 +37,7 @@ api.interceptors.response.use(
                   obj[key] = `${BASE_URL}/static${obj[key]}`;
                 }
               } else if (typeof obj[key] === 'object') {
-                fixImageUrls(obj[key]);
+                fixImageUrls(obj[key]); // ✅ FIXED: Removed random characters
               }
             }
           }
@@ -38,3 +49,6 @@ api.interceptors.response.use(
   },
   (error) => Promise.reject(error)
 );
+
+// ✅ CRITICAL: Add default export
+export default api;
