@@ -36,12 +36,12 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
             return;
         }
 
-        const newItem = { 
-            cart_code: cart_code, 
+        const newItem = {
+            cart_code: cart_code,
             product_id: product.id,
             quantity: quantity
         };
-        
+
         api.post("add_item/", newItem)
             .then(res => {
                 toast.success("Item added to cart!");
@@ -54,21 +54,21 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
 
     useEffect(() => {
         if (!slug) return;
-        
+
         setLoading(true);
         api.get(`product_detail/${slug}/`)
             .then(res => {
                 console.log('✅ Product data:', res.data);
                 setProduct(res.data);
                 setSimilarProducts(res.data.similar_products || []);
-                
+
                 // Set image URL immediately
                 if (res.data.image) {
                     const imageUrl = getImageUrl(res.data.image);
                     console.log('🖼️ Setting image URL:', imageUrl);
                     setCurrentImage(imageUrl);
                 }
-                
+
                 setLoading(false);
             })
             .catch(err => {
@@ -99,17 +99,20 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                         <div className="col-md-6">
                             <img
                                 className="card-img-top mb-5 mb-md-0 rounded"
-                                src={currentImage}
+                                src={getImageUrl(product.image)}
                                 alt={product.name}
-                                onError={handleImageError}
-                                style={{ 
-                                    maxHeight: '500px', 
-                                    objectFit: 'contain', 
+                                onError={(e) => {
+                                    e.target.src = PLACEHOLDER_IMAGE;
+                                }}
+                                style={{
+                                    maxHeight: '500px',
+                                    objectFit: 'contain',
                                     width: '100%',
                                     backgroundColor: '#f8f9fa'
                                 }}
                             />
                         </div>
+
                         <div className="col-md-6">
                             <div className="small mb-1">SKU: {product.slug}</div>
                             <h1 className="display-5 fw-bolder">{product.name}</h1>
@@ -128,7 +131,7 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                                 />
                                 <button
                                     className="btn btn-outline-dark flex-shrink-0"
-                                    type='button'   
+                                    type='button'
                                     onClick={add_item}
                                     disabled={inCart || !cart_code}
                                 >
