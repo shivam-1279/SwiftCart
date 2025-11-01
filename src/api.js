@@ -7,7 +7,7 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Request interceptor for auth tokens
+// Only auth interceptor - NO image processing
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
@@ -19,32 +19,5 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ ULTRA-SIMPLE: Only fix image URLs in the exact format you need
-api.interceptors.response.use(
-  (response) => {
-    if (response.data && typeof response.data === 'object') {
-      const fixImages = (obj) => {
-        if (Array.isArray(obj)) {
-          return obj.map(fixImages);
-        }
-        if (obj && typeof obj === 'object') {
-          const newObj = { ...obj };
-          if (newObj.image && typeof newObj.image === 'string' && newObj.image.startsWith('/media/')) {
-            newObj.image = BASE_URL + newObj.image;
-          }
-          return newObj;
-        }
-        return obj;
-      };
-      
-      response.data = fixImages(response.data);
-    }
-    return response;
-  },
-  (error) => {
-    console.error('API Error:', error.response?.data || error.message);
-    return Promise.reject(error);
-  }
-);
-
+// NO response interceptor - let components handle images
 export default api;
