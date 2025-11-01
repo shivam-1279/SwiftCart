@@ -1,4 +1,4 @@
-// api.js - UPDATED VERSION
+// api.js - FIXED VERSION
 import axios from "axios";
 
 export const BASE_URL = "https://backend-production-9172b.up.railway.app";
@@ -37,10 +37,10 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Add request interceptor to include auth token
+// FIX: Updated request interceptor to use 'access' token instead of 'authToken'
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('access'); // Changed from 'authToken' to 'access'
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -51,18 +51,40 @@ api.interceptors.request.use(
   }
 );
 
-// Add response interceptor to handle auth errors
+// FIX: Updated response interceptor to handle token refresh
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token is invalid or expired
-      console.log('Authentication error - redirecting to login');
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      // You might want to redirect to login page here
-      // window.location.href = '/login';
+  async (error) => {
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      
+      try {
+        // Try to refresh the token
+        const refreshToken = localStorage.getItem('refresh');
+        if (refreshToken) {
+          const response = await axios.post(`${BASE_URL}/api/token/refresh/`, {
+            refresh: refreshToken
+          });
+          
+          const newAccessToken = response.data.access;
+          localStorage.setItem('access', newAccessToken);
+          
+          // Retry the original request with new token
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        // Refresh failed, logout user
+        console.log('Token refresh failed - logging out');
+        localStorage.removeItem('access');
+        localStorage.removeItem('refresh');
+        // Redirect to login page
+        window.location.href = '/login';
+      }
     }
+    
     return Promise.reject(error);
   }
 );
