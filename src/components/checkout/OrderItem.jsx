@@ -1,7 +1,7 @@
 import React from 'react';
 import { getImageUrl, PLACEHOLDER_IMAGE } from '../../api';
 
-const OrderItem = ({ item, handleUpdateQuantity, handleRemove }) => {
+const OrderItem = ({ item }) => {
   return (
     <div className="card mb-3 p-3 border-0 border-bottom shadow-sm-sm">
       <div className="d-flex align-items-center">
@@ -13,6 +13,7 @@ const OrderItem = ({ item, handleUpdateQuantity, handleRemove }) => {
           style={{ objectFit: 'cover' }}
           alt={item.product.name}
           onError={(e) => {
+            console.log('Order item image failed to load');
             e.target.src = PLACEHOLDER_IMAGE;
           }}
         />

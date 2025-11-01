@@ -48,7 +48,7 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                 if (fetchCartStats) {
                     fetchCartStats();
                 } else if (setNumberCartItems) {
-                    setNumberCartItems(prev => prev + 1);
+                    setNumberCartItems(prev => prev + quantity);
                 }
             })
             .catch(err => {
@@ -64,6 +64,8 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
         api.get(`product_detail/${slug}/`)
             .then(res => {
                 console.log('Product data:', res.data);
+                console.log('Product image URL:', res.data.image);
+                console.log('Processed image URL:', getImageUrl(res.data.image));
                 setProduct(res.data);
                 setSimilarProducts(res.data.similar_products || []);
                 setLoading(false);
@@ -94,9 +96,15 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                                 src={getImageUrl(product.image)}
                                 alt={product.name}
                                 onError={(e) => { 
+                                    console.log('Image failed to load, using placeholder');
                                     e.target.src = PLACEHOLDER_IMAGE;
                                 }}
-                                style={{ maxHeight: '500px', objectFit: 'contain', width: '100%' }}
+                                style={{ 
+                                    maxHeight: '500px', 
+                                    objectFit: 'contain', 
+                                    width: '100%',
+                                    backgroundColor: '#f8f9fa'
+                                }}
                             />
                         </div>
                         <div className="col-md-6">

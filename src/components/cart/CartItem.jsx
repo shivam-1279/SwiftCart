@@ -25,6 +25,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
               alt={item.product.name}
               style={{ objectFit: 'cover', minHeight: '200px' }}
               onError={(e) => {
+                console.log('Cart item image failed to load');
                 e.target.src = PLACEHOLDER_IMAGE;
               }}
             />
