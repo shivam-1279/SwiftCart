@@ -38,16 +38,21 @@ api.interceptors.response.use(
                 
                 // Only fix if it's a relative path starting with /media/ or /static/
                 if (imageUrl && imageUrl.startsWith('/') && !imageUrl.startsWith('http')) {
-                  // Remove any duplicate base URLs that might have been added
+                  // ✅ FIX: Check if URL already contains base URL (avoid duplication)
+                  const baseUrlWithProtocol = BASE_URL.startsWith('http') ? BASE_URL : `https://${BASE_URL}`;
+                  
+                  // Remove any protocol variations that might cause duplication
                   let cleanUrl = imageUrl;
-                  if (imageUrl.includes(BASE_URL)) {
-                    cleanUrl = imageUrl.replace(BASE_URL, '');
+                  if (imageUrl.includes('backend-production-9172b.up.railway.app')) {
+                    // Extract just the path part if domain is already included
+                    const urlObj = new URL(imageUrl.includes('://') ? imageUrl : `https://${imageUrl}`);
+                    cleanUrl = urlObj.pathname;
                   }
                   
-                  // Construct proper URL
-                  processed[key] = `${BASE_URL}${cleanUrl}`;
+                  // ✅ FIX: Construct proper URL with protocol
+                  processed[key] = `${baseUrlWithProtocol}${cleanUrl}`;
                 }
-              } else if (typeof processed[key] === 'object') {
+              } else if (typeof processed[key] === 'object' && processed[key] !== null) {
                 processed[key] = processData(processed[key]);
               }
             }
