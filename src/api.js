@@ -5,8 +5,7 @@ export const BASE_URL = import.meta.env.VITE_API_URL || "https://backend-product
 // Add placeholder image data URI
 export const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
 
-// **FIXED: Proper image URL construction**
-// api.js - UPDATE getImageUrl function
+// api.js - UPDATE getImageUrl for static files
 export const getImageUrl = (imagePath) => {
   console.log('Original image path:', imagePath);
   
@@ -19,11 +18,20 @@ export const getImageUrl = (imagePath) => {
     return imagePath;
   }
   
-  // Remove leading slash if present
-  const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
+  // Extract filename from path (handle both /media/img/ and /static/img/)
+  const getFilenameFromPath = (path) => {
+    // Remove /media/img/ or /static/img/ prefix
+    return path.replace('/media/img/', '')
+              .replace('/static/img/', '')
+              .replace('/img/', '')
+              .replace('/media/', '')
+              .replace('/static/', '');
+  };
   
-  // Construct URL using the API media endpoint
-  return `${BASE_URL}/api/media/${cleanPath}`;
+  const filename = getFilenameFromPath(imagePath);
+  
+  // Use the static images endpoint
+  return `${BASE_URL}/api/images/${filename}`;
 };
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
