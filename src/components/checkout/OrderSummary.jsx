@@ -1,7 +1,12 @@
 import React from 'react';
 
 const OrderSummary = ({ cartItems = [], cartCode, taxPercent = 8 }) => {
-  // Ensure proper number conversion
+  // Safe number utility
+  const safeToFixed = (value, digits = 2) => {
+    const num = parseFloat(value);
+    return isNaN(num) ? '0.00' : num.toFixed(digits);
+  };
+
   const subtotal = cartItems.reduce(
     (sum, item) => {
       const price = parseFloat(item.price ?? item.product?.price ?? 0);
@@ -26,16 +31,16 @@ const OrderSummary = ({ cartItems = [], cartCode, taxPercent = 8 }) => {
       <div className="card-body p-4">
         <div className="d-flex justify-content-between mb-2">
           <span className="text-muted">Subtotal ({numItems} items)</span>
-          <span className="fw-semibold">${subtotal.toFixed(2)}</span>
+          <span className="fw-semibold">${safeToFixed(subtotal)}</span>
         </div>
         <div className="d-flex justify-content-between mb-3">
           <span className="text-muted">Tax ({taxPercent}%)</span>
-          <span className="fw-semibold">${tax.toFixed(2)}</span>
+          <span className="fw-semibold">${safeToFixed(tax)}</span>
         </div>
         <hr />
         <div className="d-flex justify-content-between mb-3">
           <strong>Total</strong>
-          <strong className="text-primary">${total.toFixed(2)}</strong>
+          <strong className="text-primary">${safeToFixed(total)}</strong>
         </div>
         {cartCode && (
           <div className="text-center mt-3">

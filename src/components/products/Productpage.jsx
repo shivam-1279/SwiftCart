@@ -13,11 +13,15 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
     const [loading, setLoading] = useState(false);
     const [inCart, setIncart] = useState(false);
     const [quantity, setQuantity] = useState(1);
-    const [currentImage, setCurrentImage] = useState(PLACEHOLDER_IMAGE);
+
+    // Safe number utility
+    const safeToFixed = (value, digits = 2) => {
+      const num = parseFloat(value);
+      return isNaN(num) ? '0.00' : num.toFixed(digits);
+    };
 
     const cart_code = localStorage.getItem("cart_code");
 
-    // Check if product is in cart (ignore errors)
     useEffect(() => {
         if (product.id && cart_code) {
             api.get(`product_in_cart/?cart_code=${cart_code}&product_id=${product.id}`)
@@ -25,7 +29,7 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                     setIncart(res.data.product_in_cart);
                 })
                 .catch(err => {
-                    // Ignore cart errors for now
+                    // Ignore cart errors
                 });
         }
     }, [cart_code, product.id]);
@@ -60,13 +64,6 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
             .then(res => {
                 setProduct(res.data);
                 setSimilarProducts(res.data.similar_products || []);
-
-                // Set image URL immediately
-                if (res.data.image) {
-                    const imageUrl = getImageUrl(res.data.image);
-                    setCurrentImage(imageUrl);
-                }
-
                 setLoading(false);
             })
             .catch(err => {
@@ -78,10 +75,6 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
     const handleQuantityChange = (e) => {
         const value = parseInt(e.target.value);
         if (value > 0) setQuantity(value);
-    };
-
-    const handleImageError = (e) => {
-        setCurrentImage(PLACEHOLDER_IMAGE);
     };
 
     if (loading) return <ProductpagePlaceholder />;
@@ -101,8 +94,6 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                                 onError={(e) => {
                                     e.target.src = PLACEHOLDER_IMAGE;
                                 }}
-                                onLoad={(e) => {
-                                }}
                                 style={{
                                     maxHeight: '500px',
                                     objectFit: 'contain',
@@ -115,7 +106,7 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                             <div className="small mb-1">SKU: {product.slug}</div>
                             <h1 className="display-5 fw-bolder">{product.name}</h1>
                             <div className="fs-5 mb-5">
-                                <span>${product.price}</span>
+                                <span>${safeToFixed(product.price)}</span>
                             </div>
                             <p className="lead">{product.description}</p>
                             <div className="d-flex align-items-center mb-3">

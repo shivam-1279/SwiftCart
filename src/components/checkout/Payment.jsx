@@ -6,6 +6,12 @@ const Payment = ({ cartItems, cartTotal }) => {
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
   const [processing, setProcessing] = useState(false);
 
+  // Safe number utility
+  const safeToFixed = (value, digits = 2) => {
+    const num = parseFloat(value);
+    return isNaN(num) ? '0.00' : num.toFixed(digits);
+  };
+
   const handlePayment = async () => {
     if (!cartItems || cartItems.length === 0) {
       toast.error('Your cart is empty');
@@ -14,7 +20,6 @@ const Payment = ({ cartItems, cartTotal }) => {
 
     setProcessing(true);
     try {
-      // Create order
       const orderData = {
         items: cartItems.map(item => ({
           product_id: item.product.id,
@@ -29,7 +34,6 @@ const Payment = ({ cartItems, cartTotal }) => {
       
       if (res.data.success) {
         toast.success('Order placed successfully!');
-        // Redirect to order confirmation or clear cart
         window.location.href = '/orders';
       } else {
         toast.error('Failed to place order');
@@ -41,6 +45,8 @@ const Payment = ({ cartItems, cartTotal }) => {
       setProcessing(false);
     }
   };
+
+  const finalTotal = parseFloat(cartTotal) * 1.08;
 
   return (
     <div className="card p-4 shadow-sm border-0 rounded-4">
@@ -91,7 +97,7 @@ const Payment = ({ cartItems, cartTotal }) => {
               Processing...
             </>
           ) : (
-            `Place Order - $${(cartTotal * 1.08).toFixed(2)}`
+            `Place Order - $${safeToFixed(finalTotal)}`
           )}
         </button>
         
