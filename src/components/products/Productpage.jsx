@@ -99,10 +99,14 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                         <div className="col-md-6">
                             <img
                                 className="card-img-top mb-5 mb-md-0 rounded"
-                                src={getImageUrl(product.image)}
+                                src={getImageUrl(product.image) + '?t=' + Date.now()}
                                 alt={product.name}
                                 onError={(e) => {
+                                    console.log('❌ Image failed:', e.target.src);
                                     e.target.src = PLACEHOLDER_IMAGE;
+                                }}
+                                onLoad={(e) => {
+                                    console.log('✅ Image loaded successfully:', e.target.src);
                                 }}
                                 style={{
                                     maxHeight: '500px',
@@ -112,7 +116,6 @@ const Productpage = ({ setNumberCartItems, fetchCartStats }) => {
                                 }}
                             />
                         </div>
-
                         <div className="col-md-6">
                             <div className="small mb-1">SKU: {product.slug}</div>
                             <h1 className="display-5 fw-bolder">{product.name}</h1>
