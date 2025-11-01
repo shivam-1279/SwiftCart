@@ -8,31 +8,26 @@ export const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAw
 // **EMERGENCY FIX: Clean malformed URLs from API**
 export const getImageUrl = (imagePath) => {
   console.log('🔍 getImageUrl called with:', imagePath);
-  
+
   if (!imagePath || imagePath === 'null' || imagePath === 'undefined') {
     return PLACEHOLDER_IMAGE;
   }
-  
-  // **FIX: Clean the malformed URLs that start with BASE_URL**
-  if (imagePath.startsWith(BASE_URL)) {
-    // Extract the path part after BASE_URL
-    const path = imagePath.replace(BASE_URL, '');
-    console.log('🔄 Cleaned malformed URL:', imagePath, '→', path);
-    return `${BASE_URL}${path}`;
-  }
-  
-  // If it's already a proper full URL, return as is
-  if (imagePath.startsWith('http')) {
+
+  // If it's already a proper full URL (starts with http/https), return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
     return imagePath;
   }
-  
-  // If it starts with /, prepend BASE_URL
+
+  // Normalize BASE_URL (remove trailing slash)
+  const cleanBase = BASE_URL.replace(/\/$/, '');
+
+  // If path starts with '/', attach directly
   if (imagePath.startsWith('/')) {
-    return `${BASE_URL}${imagePath}`;
+    return `${cleanBase}${imagePath}`;
   }
-  
-  // Default: assume it's a filename in static/img
-  return `${BASE_URL}/static/img/${imagePath}`;
+
+  // Otherwise assume static/img folder
+  return `${cleanBase}/static/img/${imagePath}`;
 };
 
 const api = axios.create({
