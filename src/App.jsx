@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Footer from "./components/ui/Footer";
 import Navbar from "./components/ui/NavBar";
@@ -18,12 +18,12 @@ import Register from "./components/user/Register";
 import ProtectedRoute from "./components/ui/ProtectedRoute";
 import UserPage from "./components/user/UserPage";
 import OrderHistory from "./components/user/OrderHistory";
-import { AuthProvider, AuthContext } from "./components/user/AuthContext";
+import { AuthProvider } from "./components/user/AuthContext";
 
-function App() {
+// Create a separate component that uses the AuthContext
+const AppContent = () => {
   const [numCartItems, setNumberCartItems] = useState(0);
   const cart_code = localStorage.getItem("cart_code");
-  const { validateAndCleanTokens } = useContext(AuthContext);
 
   // Function to fetch cart stats
   const fetchCartStats = () => {
@@ -35,12 +35,7 @@ function App() {
         })
         .catch(err => {
           console.log("Error fetching cart stats:", err.message);
-          // If it's an auth error, validate tokens
-          if (err.response?.status === 401) {
-            validateAndCleanTokens?.();
-          } else {
-            setNumberCartItems(0);
-          }
+          setNumberCartItems(0);
         });
     }
   };
@@ -66,7 +61,7 @@ function App() {
   };
 
   return (
-    <AuthProvider>
+    <>
       {/* Navbar always visible */}
       <Navbar numCartItems={numCartItems} />
 
@@ -93,6 +88,14 @@ function App() {
       <ToastContainer />
       {/* Footer always visible */}
       <Footer />
+    </>
+  );
+};
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
     </AuthProvider>
   );
 }
