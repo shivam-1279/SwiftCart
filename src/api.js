@@ -29,12 +29,31 @@ const api = axios.create({
   timeout: 10000,
 });
 
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Add cart_code to requests that need it
+    const cartEndpoints = ['cart', 'get_cart', 'update_quantity', 'Delete_item'];
+    const needsCartCode = cartEndpoints.some(endpoint => 
+      config.url?.includes(endpoint)
+    );
+    
+    if (needsCartCode) {
+      const cart_code = localStorage.getItem("cart_code");
+      if (cart_code) {
+        if (!config.params) {
+          config.params = { cart_code };
+        } else {
+          config.params.cart_code = cart_code;
+        }
+      }
+    }
+    
     return config;
   },
   (error) => {

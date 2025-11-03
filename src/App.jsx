@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import { Routes, Route } from "react-router-dom";
 import Footer from "./components/ui/Footer";
 import Navbar from "./components/ui/NavBar";
@@ -14,14 +14,16 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CheckoutPage from "./components/checkout/CheckoutPage";
 import LoginPage from "./components/user/LoginPage";
-import Register from "./components/user/Register"; // Add this import
+import Register from "./components/user/Register";
 import ProtectedRoute from "./components/ui/ProtectedRoute";
 import UserPage from "./components/user/UserPage";
-import OrderHistory from "./components/user/OrderHistory"; // Add this import
+import OrderHistory from "./components/user/OrderHistory";
+import { AuthProvider, AuthContext } from "./components/user/AuthContext";
 
 function App() {
   const [numCartItems, setNumberCartItems] = useState(0);
   const cart_code = localStorage.getItem("cart_code");
+  const { validateAndCleanTokens } = useContext(AuthContext);
 
   // Function to fetch cart stats
   const fetchCartStats = () => {
@@ -33,17 +35,38 @@ function App() {
         })
         .catch(err => {
           console.log("Error fetching cart stats:", err.message);
-          setNumberCartItems(0);
+          // If it's an auth error, validate tokens
+          if (err.response?.status === 401) {
+            validateAndCleanTokens?.();
+          } else {
+            setNumberCartItems(0);
+          }
         });
     }
   };
 
   useEffect(() => {
     fetchCartStats();
+    
+    // Generate cart code if needed
+    if (!cart_code) {
+      const newCartCode = generateCartCode();
+      localStorage.setItem("cart_code", newCartCode);
+    }
   }, [cart_code]);
 
+  const generateCartCode = () => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+    let result = '';
+    for (let i = 0; i < 10; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      result += characters.charAt(randomIndex);
+    }
+    return result;
+  };
+
   return (
-    <>
+    <AuthProvider>
       {/* Navbar always visible */}
       <Navbar numCartItems={numCartItems} />
 
@@ -52,9 +75,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<Register />} /> {/* Add register route */}
+          <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<ProtectedRoute><UserPage /></ProtectedRoute>} />
-          <Route path="/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} /> {/* Add orders route */}
+          <Route path="/orders" element={<ProtectedRoute><OrderHistory /></ProtectedRoute>} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
           <Route path="/product/:slug" element={
@@ -70,7 +93,7 @@ function App() {
       <ToastContainer />
       {/* Footer always visible */}
       <Footer />
-    </>
+    </AuthProvider>
   );
 }
 
