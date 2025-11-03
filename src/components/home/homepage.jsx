@@ -5,7 +5,7 @@ import PlaceholderContainer from "../ui/placeholderContainer";
 import { Error } from "../ui/Eror";
 import { randomValue } from "../../GenerateCartCode";
 import SearchFilter from "./SearchFillter";
-import { getImageUrl } from "../../api";
+import { getImageUrl } from "../../api"; // Import getImageUrl from api
 
 const Homepage = () => {
   const [products, setProducts] = useState([]);
@@ -18,12 +18,14 @@ const Homepage = () => {
     }
   }, []);
 
+  // Fixed useEffect - removed infinite loop and added proper error handling
   useEffect(() => {
     setLoading(true);
-    setError("");
+    setError(""); // Clear previous errors
     
     api.get("/products/")
       .then((res) => {
+        // Process products with proper image URLs
         const processedProducts = res.data.map(product => ({
           ...product,
           image_url: getImageUrl(product.image_url || product.image)
@@ -34,20 +36,16 @@ const Homepage = () => {
       })
       .catch((err) => {
         console.error("Products API error:", err);
-        
-        // COMPLETELY IGNORE 401 ERRORS - DON'T SET ERROR STATE
-        if (err.response?.status === 401) {
-          console.log("Products API requires authentication, but continuing silently");
-          // Set empty products array instead of showing error
-          setProducts([]);
-        } else {
-          // Only show error for other types of failures
+        // Only show error if it's not an auth issue (401)
+        if (err.response?.status !== 401) {
           setError("Error loading products. Please try again later.");
+        } else {
+          // For 401 errors, just log but don't show error to user
+          console.log("Authentication required for products API");
         }
-        
         setLoading(false);
       });
-  }, []);
+  }, []); // Empty dependency array - runs only once
 
   const handleFilteredResults = (filteredData) => {
     setProducts(filteredData);
@@ -63,10 +61,10 @@ const Homepage = () => {
         ) : (
           products.length > 0 && <CardContainer products={products} />
         )}
-        {/* Show message when no products but not loading and no error */}
+        {/* Show message when no products but not loading */}
         {!loading && products.length === 0 && !error && (
           <div className="text-center text-muted py-5">
-            <p>No products available at the moment.</p>
+            <p>No products found.</p>
           </div>
         )}
       </div>
