@@ -19,12 +19,14 @@ footer {
   transform: translateY(-5px);
   transition: 0.3s;
 }
-/* Hide the specific error message */
-.alert.alert-danger[role="alert"] {
+/* Nuclear option - hide ALL alert-danger elements */
+.alert.alert-danger {
   display: none !important;
-}
-
-/* Or hide all alert-danger elements */
-.alert-danger {
-  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
 }
