@@ -19,6 +19,7 @@ import ProtectedRoute from "./components/ui/ProtectedRoute";
 import UserPage from "./components/user/UserPage";
 import OrderHistory from "./components/user/OrderHistory";
 import { AuthProvider } from "./components/user/AuthContext";
+import HomepageFixed from "./components/home/HomepageFixed";
 
 // Create a separate component that uses the AuthContext
 const AppContent = () => {
@@ -68,7 +69,7 @@ const AppContent = () => {
       {/* Page content changes based on route */}
       <div className="main-content">
         <Routes>
-          <Route path="/" element={<Homepage />} />
+<Route path="/" element={<HomepageFixed />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<ProtectedRoute><UserPage /></ProtectedRoute>} />
