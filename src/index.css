@@ -32,3 +32,12 @@ a {
   padding-left: 15px;
   padding-right: 15px;
 }
+/* Hide the specific error message */
+.alert.alert-danger[role="alert"] {
+  display: none !important;
+}
+
+/* Or hide all alert-danger elements */
+.alert-danger {
+  display: none !important;
+}
